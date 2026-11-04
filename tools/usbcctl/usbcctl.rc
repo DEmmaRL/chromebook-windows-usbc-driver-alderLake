@@ -1,0 +1,35 @@
+/* SPDX-License-Identifier: MIT */
+/*
+ * usbcctl.rc - file version information for usbcctl.exe (version.h: see driver\TigerLakeUsbcMux.rc).
+ */
+#include <winver.h>
+#include "version.h"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     VER_MAJOR, VER_MINOR, VER_BUILD, VER_REVISION
+PRODUCTVERSION  VER_MAJOR, VER_MINOR, VER_BUILD, VER_REVISION
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS       0
+FILEOS          VOS_NT_WINDOWS32
+FILETYPE        VFT_APP
+FILESUBTYPE     VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName",      VER_COMPANY
+            VALUE "FileDescription",  "Tiger Lake PMC USB-C Mux Diagnostic Tool"
+            VALUE "FileVersion",      VER_STRING
+            VALUE "InternalName",     "usbcctl"
+            VALUE "LegalCopyright",   VER_COPYRIGHT
+            VALUE "OriginalFilename", "usbcctl.exe"
+            VALUE "ProductName",      VER_PRODUCT
+            VALUE "ProductVersion",   VER_STRING
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
