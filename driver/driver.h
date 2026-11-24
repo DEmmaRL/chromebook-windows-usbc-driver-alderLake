@@ -26,10 +26,17 @@
 /* PMC IPC command for USB-C mux messages. */
 #define PMC_IPC_USBC_CMD        0xA7
 
-/* Tiger Lake IOM (ACPI\INTC1072, \_SB.IOM) port status registers. */
-#define IOM_BASE_ADDRESS        0xFBC10000ULL
-#define IOM_PORT_STATUS_OFFSET  0x560
-#define IOM_PORT_COUNT          4
+/*
+ * IOM (\_SB.IOM) port status registers:
+ *   Tiger Lake  (ACPI\INTC1072): base 0xFBC10000, offset 0x560
+ *   Alder Lake  (ACPI\INTC1079): base 0xFBC10000, offset 0x160
+ */
+#define IOM_BASE_ADDRESS            0xFBC10000ULL
+#define IOM_MMIO_SIZE               0x1600UL
+#define IOM_PORT_STATUS_OFFSET_TGL  0x560UL
+#define IOM_PORT_STATUS_OFFSET_ADL  0x160UL
+#define IOM_PORT_STATUS_OFFSET      IOM_PORT_STATUS_OFFSET_TGL
+#define IOM_PORT_COUNT              4
 
 #define MUX_MAX_PORTS           4
 #define MUX_ORIENTATION_FOLLOW_CABLE (-1)
@@ -64,7 +71,8 @@ typedef struct _DEVICE_CONTEXT {
     BOOLEAN                     EcRemovePending; /* crosecbus is being removed; don't reconnect */
     CROSEC_INTERFACE_STANDARD   Ec;
 
-    volatile ULONG             *IomPortStatus;  /* mapped IOM_PORT_STATUS array */
+    volatile ULONG             *IomPortStatus;       /* mapped IOM_PORT_STATUS array */
+    ULONG                       IomPortStatusOffset; /* active IOM_PORT_STATUS offset (0x560 TGL, 0x160 ADL) */
 
     MUX_PORT                    Ports[MUX_MAX_PORTS];
     ULONG                       PortCount;

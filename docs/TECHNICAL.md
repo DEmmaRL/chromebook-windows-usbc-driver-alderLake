@@ -15,7 +15,8 @@ To inspect the ACPI tables of your own machine, dump and disassemble them with `
 | `GOOG0003` | `\_SB.CREC.ECPD` | EC PD event notification | `cros-usbpd-notify-acpi` | CoolStar `crosectypec` |
 | `INTC1026` | `\_SB.PCI0.PMC` | PMC IPC mailbox | `intel_scu` | **TigerLakeUsbcMux** |
 | `INTC105C` | `\_SB.PCI0.PMC.MUX` | Type-C mux agent (port descriptions) | `intel_pmc_mux` | TigerLakeUsbcMux INF (no function driver) |
-| `INTC1072` | `\_SB.IOM` | IOM (port status registers) | read by `intel_pmc_mux` | TigerLakeUsbcMux INF (no function driver) |
+| `INTC1072` | `\_SB.IOM` | Tiger Lake IOM (port status registers) | read by `intel_pmc_mux` | TigerLakeUsbcMux INF (no function driver) |
+| `INTC1079` | `\_SB.IOM` | Alder Lake / Alder Lake-N IOM (port status registers) | read by `intel_pmc_mux` | TigerLakeUsbcMux INF (no function driver) |
 
 The firmware configures the Tiger Lake Type-C subsystem (TCSS) mux only at boot. After that, the OS must send PMC IPC
 messages on every attach, detach and mode change.
@@ -64,7 +65,11 @@ Examples (CON1, usb3 = 2, usb2 = 4):
 
 ### IOM port status
 
-`IOM_PORT_STATUS` registers at `0xFBC10000 + 0x560 + 4 * (usb3_port - 1)` (`INTC1072` `_CRS`).
+`IOM_PORT_STATUS` registers at `0xFBC10000 + offset + 4 * (usb3_port - 1)` (`_CRS` of `\_SB.IOM`):
+- **Tiger Lake (`INTC1072`):** `offset = 0x560`
+- **Alder Lake / Alder Lake-N (`INTC1079`):** `offset = 0x160`
+
+The driver selects `0x160` automatically when `ACPI\INTC1079` or an Alder Lake / Raptor Lake CPU is detected (and supports an optional `Device Parameters\IomPortStatusOffset` DWORD override).
 
 | Bits | Meaning |
 |---|---|

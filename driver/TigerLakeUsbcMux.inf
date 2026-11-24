@@ -28,10 +28,11 @@ TigerLakeUsbcMux.sys = 1,,
 %TigerLakeUsbcMux.DeviceDesc% = TigerLakeUsbcMux_Device, ACPI\INTC1026
 %MuxAgent.DeviceDesc%         = TigerLakeUsbcMux_NoFunction, ACPI\INTC105C
 %Iom.DeviceDesc%              = TigerLakeUsbcMux_NoFunction, ACPI\INTC1072
+%IomAdl.DeviceDesc%           = TigerLakeUsbcMux_NoFunction, ACPI\INTC1079
 
 ; INTC105C (\_SB.PCI0.PMC.MUX) only describes the ports, which TigerLakeUsbcMux reads from its parent.
-; INTC1072 (\_SB.IOM) holds the IOM status registers, which TigerLakeUsbcMux reads directly.
-; Neither needs a function driver: install them without one so they no longer show as unknown.
+; INTC1072 (Tiger Lake) and INTC1079 (Alder Lake) (\_SB.IOM) hold the IOM status registers, which TigerLakeUsbcMux reads directly.
+; None of these need a function driver: install them without one so they no longer show as unknown.
 [TigerLakeUsbcMux_NoFunction.NT]
 
 [TigerLakeUsbcMux_NoFunction.NT.Services]
@@ -74,3 +75,4 @@ TigerLakeUsbcMux.DeviceDesc  = "Tiger Lake PMC USB-C Mux (Chromebook)"
 TigerLakeUsbcMux.ServiceDesc = "Tiger Lake PMC USB-C Mux Service"
 MuxAgent.DeviceDesc          = "Tiger Lake PMC USB-C Mux Agent (Chromebook)"
 Iom.DeviceDesc               = "Tiger Lake Type-C IO Manager (Chromebook)"
+IomAdl.DeviceDesc            = "Alder Lake Type-C IO Manager (Chromebook)"

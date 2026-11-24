@@ -24,7 +24,7 @@ if (-not ((bcdedit /enum '{current}' | Out-String) -match 'testsigning\s+Yes')) 
 
 $devices = Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue
 if (-not $Force -and -not ($devices | Where-Object { $_.InstanceId -like 'ACPI\INTC1026\*' })) {
-  throw 'No Tiger Lake PMC (ACPI\INTC1026) found; this machine does not look supported. Use -Force to install anyway.'
+  throw 'No Tiger Lake / Alder Lake PMC (ACPI\INTC1026) found; this machine does not look supported. Use -Force to install anyway.'
 }
 $bus = $devices | Where-Object { $_.InstanceId -like 'ACPI\GOOG0004\*' } | Select-Object -First 1
 if (-not $bus -or $bus.Status -ne 'OK') {
@@ -38,8 +38,9 @@ foreach ($store in 'Root', 'TrustedPublisher') {
 }
 
 $result = pnputil /add-driver (Join-Path $here 'TigerLakeUsbcMux.inf') /install | Out-String
+$pnpExit = $LASTEXITCODE
 $result
-if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 3010) { throw "pnputil failed ($LASTEXITCODE)" }
+if ($pnpExit -ne 0 -and $pnpExit -ne 3010) { throw "pnputil failed ($pnpExit)" }
 $published = ([regex]'Published Name:\s+(\S+)').Match($result).Groups[1].Value
 Start-Sleep -Seconds 2
 
@@ -52,7 +53,13 @@ foreach ($p in $packages) {
   }
 }
 
-Get-PnpDevice -PresentOnly | Where-Object { $_.InstanceId -match '^ACPI\\(INTC1026|INTC105C|INTC1072)\\' } | ForEach-Object {
+# List whichever supported ACPI devices are present (INTC105C may not be enumerated on all platforms).
+$matched = Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue |
+  Where-Object { $_.InstanceId -match '^ACPI\\(INTC1026|INTC105C|INTC1072|INTC1079)\\' }
+$matched | ForEach-Object {
   '{0,-8} {1,-46} {2}' -f $_.Status, $_.FriendlyName, $_.Problem
 }
-if ($LASTEXITCODE -eq 3010 -or $result -match 'reboot') { Write-Host 'Restart Windows to finish the installation.' }
+if (-not ($matched | Where-Object { $_.InstanceId -match '^ACPI\\(INTC1072|INTC1079)\\' })) {
+  Write-Warning 'No supported Type-C IO Manager (ACPI\INTC1072 or ACPI\INTC1079) was found.'
+}
+if ($pnpExit -eq 3010 -or $result -match 'reboot') { Write-Host 'Restart Windows to finish the installation.' }

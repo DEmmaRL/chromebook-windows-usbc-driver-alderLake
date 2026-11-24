@@ -1,0 +1,49 @@
+name: Build Alder Lake USB-C Driver
+
+on:
+  push:
+    branches:
+      - main
+      - alder-lake-support
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Windows WDK 10.0.26100 via winget
+        shell: pwsh
+        run: |
+          $kit = "${env:ProgramFiles(x86)}\Windows Kits\10"
+          $hasWdk = Test-Path "$kit\Include\10.0.26100.0\km\wdm.h"
+          if (-not $hasWdk) {
+            winget install --id Microsoft.WindowsWDK.10.0.26100 --exact --source winget --silent --disable-interactivity --accept-package-agreements --accept-source-agreements
+          }
+          if (-not (Test-Path "$kit\Include\10.0.26100.0\km\wdm.h")) {
+            throw "WDK 10.0.26100 kernel headers were not found after installation."
+          }
+
+      - name: Build driver and usbcctl
+        shell: pwsh
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
+
+      - name: Package release archive
+        shell: pwsh
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\package.ps1 -NoBuild
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: alderlake-usbc-driver
+          if-no-files-found: error
+          path: |
+            out/
+            dist/
+            install/
